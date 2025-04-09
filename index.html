@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tariff Wars</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .flag {
+      width: 100px;
+      height: auto;
+    }
+
+    .scoreboard {
+      font-family: 'Courier New', monospace;
+      font-size: 2rem;
+      background-color: #000;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 8px;
+      min-width: 120px;
+    }
+
+    .circles {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #ccc;
+    }
+
+    .circle.active {
+      background-color: red;
+    }
+
+    @media (max-width: 576px) {
+      .flag {
+        width: 70px;
+      }
+
+      .scoreboard {
+        font-size: 1.5rem;
+        padding: 10px;
+      }
+
+      .circle {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  </style>
+</head>
+<body class="text-center p-4">
+
+  <h1 class="mb-4 fw-bold">Tariff Wars</h1>
+
+  <div class="d-flex justify-content-center align-items-center flex-wrap mb-3">
+    <img src="https://flagcdn.com/us.svg" alt="USA" class="flag mx-3" />
+    <span class="mx-2 fs-2 fw-bold">VS</span>
+    <img src="https://flagcdn.com/cn.svg" alt="China" class="flag mx-3" />
+  </div>
+
+  <div class="d-flex justify-content-center gap-4 mb-2 flex-wrap">
+    <div class="scoreboard" id="usaScore">---</div>
+    <div class="scoreboard" id="chinaScore">---</div>
+  </div>
+
+  <div class="d-flex justify-content-center gap-4 mb-4 flex-wrap">
+    <div class="text-center">
+      <div class="circles" id="usaRounds">
+        <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+      </div>
+    </div>
+    <div class="text-center">
+      <div class="circles" id="chinaRounds">
+        <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-danger px-5 py-2 mb-4" onclick="playRound()">Fight!</button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Round Result</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="checkWinner()"></button>
+        </div>
+        <div class="modal-body" id="resultText"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="checkWinner()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div class="modal fade" id="winnerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Game Over</h5>
+        </div>
+        <div class="modal-body" id="winnerText"></div>
+        <div class="modal-footer">
+          <button class="btn btn-success" onclick="resetGame()" data-bs-dismiss="modal">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let usaWins = 0;
+    let chinaWins = 0;
+    let currentRound = 0;
+
+    function playRound() {
+      if (currentRound >= 5) return;
+
+      const usaTariff = Math.floor(Math.random() * 201);
+      const chinaTariff = Math.floor(Math.random() * 201);
+
+      document.getElementById('usaScore').innerText = usaTariff + "%";
+      document.getElementById('chinaScore').innerText = chinaTariff + "%";
+
+      let roundWinner = '';
+      if (usaTariff > chinaTariff) {
+        roundWinner = 'USA wins this round!';
+        document.querySelectorAll('#usaRounds .circle')[usaWins].classList.add('active');
+        usaWins++;
+      } else if (chinaTariff > usaTariff) {
+        roundWinner = 'China wins this round!';
+        document.querySelectorAll('#chinaRounds .circle')[chinaWins].classList.add('active');
+        chinaWins++;
+      } else {
+        roundWinner = "It's a tie!";
+      }
+
+      currentRound++;
+
+      document.getElementById('resultText').innerHTML = `
+        <p><strong>USA Tariff:</strong> ${usaTariff}%</p>
+        <p><strong>China Tariff:</strong> ${chinaTariff}%</p>
+        <hr>
+        <h4 class="text-primary">${roundWinner}</h4>
+      `;
+
+      const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+      resultModal.show();
+    }
+
+    function checkWinner() {
+      if (usaWins === 5 || chinaWins === 5 || currentRound === 5) {
+        const winnerText = usaWins > chinaWins ? "USA wins the game!" :
+                           chinaWins > usaWins ? "China wins the game!" :
+                           "The game is a draw!";
+        document.getElementById('winnerText').innerHTML = `<h3>${winnerText}</h3>`;
+        const winnerModal = new bootstrap.Modal(document.getElementById('winnerModal'));
+        winnerModal.show();
+      }
+    }
+
+    function resetGame() {
+      usaWins = 0;
+      chinaWins = 0;
+      currentRound = 0;
+      document.getElementById('usaScore').innerText = "---";
+      document.getElementById('chinaScore').innerText = "---";
+      document.querySelectorAll('.circle').forEach(c => c.classList.remove('active'));
+    }
+  </script>
+</body>
+</html>
